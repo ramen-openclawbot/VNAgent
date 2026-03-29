@@ -1,0 +1,2310 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VNAgent - Giải Pháp AI Cho Doanh Nghiệp 1-Thành-Viên</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    :root {
+      --bg-primary: #0a0a0f;
+      --bg-secondary: #12121a;
+      --bg-card: #1a1a25;
+      --text-primary: #f0f0f5;
+      --text-secondary: #8a8a9a;
+      --accent-purple: #8b5cf6;
+      --accent-blue: #3b82f6;
+      --accent-green: #10b981;
+      --accent-pink: #ec4899;
+      --glass-bg: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.08);
+    }
+
+    html {
+      scroll-behavior: smooth;
+      overflow-x: hidden;
+    }
+
+    body {
+      font-family: 'Space Grotesk', 'Inter', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      overflow-x: hidden;
+      cursor: default;
+    }
+
+    /* Custom Cursor */
+    .cursor-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--accent-purple);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      transition: transform 0.1s;
+      mix-blend-mode: difference;
+    }
+
+    .cursor-ring {
+      width: 40px;
+      height: 40px;
+      border: 1.5px solid rgba(139, 92, 246, 0.5);
+      border-radius: 50%;
+      position: fixed;
+      pointer-events: none;
+      z-index: 10000;
+      transition: transform 0.15s ease-out, width 0.3s, height 0.3s;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Navigation */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      padding: 10px 48px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      backdrop-filter: blur(20px);
+      background: rgba(10, 10, 15, 0.7);
+      border-bottom: 1px solid var(--glass-border);
+      transition: all 0.4s ease;
+    }
+
+    nav.scrolled {
+      padding: 8px 48px;
+      background: rgba(10, 10, 15, 0.92);
+    }
+
+    /* ===== NAV LOGO — Golden Ratio φ=1.618 =====
+       Badge: 55×34px  → 55/34 = 1.6176 ≈ φ  (Fibonacci pair)
+       Font "Agent": 21px → 34/21 = 1.619 ≈ φ (badge height / text size)
+    ========================================== */
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0;
+      text-decoration: none;
+      cursor: pointer;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .nav-logo-icon {
+      flex-shrink: 0;
+      display: block;
+      filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.45));
+    }
+
+    .nav-logo-text {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 21px;   /* 34 ÷ 21 = 1.619 ≈ φ */
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: -0.3px;
+      padding-left: 4px;
+      line-height: 1;
+    }
+
+    /* .logo used in footer */
+    .logo {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      display: flex;
+      align-items: center;
+      gap: 0;
+      font-family: 'Space Grotesk', sans-serif;
+      color: #ffffff;
+    }
+
+    .logo-icon {
+      flex-shrink: 0;
+      display: block;
+    }
+
+    .nav-center {
+      display: flex;
+      gap: 36px;
+      align-items: center;
+    }
+
+    .nav-center a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      transition: color 0.3s;
+      position: relative;
+    }
+
+    .nav-center a::after {
+      content: '';
+      position: absolute;
+      bottom: -4px;
+      left: 0;
+      width: 0;
+      height: 2px;
+      background: var(--accent-purple);
+      transition: width 0.3s;
+    }
+
+    .nav-center a:hover {
+      color: var(--text-primary);
+    }
+
+    .nav-center a:hover::after {
+      width: 100%;
+    }
+
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .nav-btn {
+      padding: 10px 24px;
+      border-radius: 100px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      text-decoration: none;
+      border: none;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--glass-border);
+    }
+
+    .btn-ghost:hover {
+      border-color: var(--accent-purple);
+      background: rgba(139, 92, 246, 0.1);
+    }
+
+    .btn-primary {
+      background: var(--text-primary);
+      color: var(--bg-primary);
+    }
+
+    .btn-primary:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 30px rgba(139, 92, 246, 0.3);
+    }
+
+    .menu-btn {
+      display: none;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text-primary);
+      padding: 10px 18px;
+      border-radius: 100px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    /* Three.js Canvas */
+    #three-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Hero Section */
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      padding: 120px 48px 80px;
+      z-index: 1;
+    }
+
+    .hero-content {
+      max-width: 640px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px 6px 6px;
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 32px;
+      animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .badge-dot {
+      width: 24px;
+      height: 24px;
+      background: var(--accent-green);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      animation: pulse-glow 2s infinite;
+    }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+      50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+    }
+
+    .hero h1 {
+      font-size: clamp(36px, 5vw, 64px);
+      font-weight: 700;
+      line-height: 1.1;
+      letter-spacing: -1.5px;
+      margin-bottom: 28px;
+      animation: fadeInUp 0.8s ease 0.15s both;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .hero h1 .gradient-text {
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue), var(--accent-pink));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 17px;
+      line-height: 1.8;
+      color: var(--text-secondary);
+      max-width: 520px;
+      margin-bottom: 40px;
+      animation: fadeInUp 0.8s ease 0.3s both;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      animation: fadeInUp 0.8s ease 0.45s both;
+    }
+
+    .hero-actions .btn-large {
+      padding: 16px 36px;
+      font-size: 15px;
+      border-radius: 100px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: none;
+      text-decoration: none;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .btn-glow {
+      background: var(--accent-purple);
+      color: white;
+      box-shadow: 0 0 40px rgba(139, 92, 246, 0.3);
+    }
+
+    .btn-glow:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 60px rgba(139, 92, 246, 0.5);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text-primary);
+      border: 1px solid var(--glass-border) !important;
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent-purple) !important;
+      background: rgba(139, 92, 246, 0.08);
+    }
+
+    .scroll-indicator {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
+      animation: fadeInUp 0.8s ease 0.8s both;
+    }
+
+    .scroll-line {
+      width: 1px;
+      height: 40px;
+      background: linear-gradient(to bottom, var(--accent-purple), transparent);
+      animation: scroll-pulse 2s infinite;
+    }
+
+    @keyframes scroll-pulse {
+      0%, 100% { opacity: 0.3; transform: scaleY(1); }
+      50% { opacity: 1; transform: scaleY(1.3); }
+    }
+
+    .corner-marks {
+      position: absolute;
+      bottom: 40px;
+      left: 0;
+      right: 0;
+      padding: 0 48px;
+      display: flex;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+
+    .cross-mark {
+      color: var(--text-secondary);
+      font-size: 16px;
+      opacity: 0.3;
+    }
+
+    /* 3D Logo — lives inside nav as the logo slot */
+    .hero-3d-logo {
+      position: relative;
+      width: 210px;
+      height: 72px;
+      flex-shrink: 0;
+      pointer-events: none;
+    }
+
+    /* Stats Bar */
+    .stats-bar {
+      position: relative;
+      z-index: 1;
+      padding: 0 48px 80px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--glass-border);
+      border: 1px solid var(--glass-border);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+
+    .stat-item {
+      background: var(--bg-secondary);
+      padding: 40px;
+      text-align: center;
+      transition: background 0.3s;
+    }
+
+    .stat-item:hover {
+      background: var(--bg-card);
+    }
+
+    .stat-number {
+      font-size: 42px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--text-primary), var(--accent-purple));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    /* Section Headers */
+    .section-header {
+      text-align: center;
+      margin-bottom: 64px;
+    }
+
+    .section-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent-purple);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 20px;
+    }
+
+    .section-title {
+      font-size: clamp(32px, 4vw, 52px);
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      line-height: 1.15;
+      margin-bottom: 16px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .section-subtitle {
+      font-size: 17px;
+      color: var(--text-secondary);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    /* Solutions Section */
+    .solutions {
+      position: relative;
+      z-index: 1;
+      padding: 100px 48px;
+    }
+
+    .solutions-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .solution-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 40px 32px;
+      transition: all 0.4s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .solution-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent-purple), transparent);
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+
+    .solution-card:hover::before {
+      opacity: 1;
+    }
+
+    .solution-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(139, 92, 246, 0.2);
+      background: rgba(255,255,255,0.06);
+    }
+
+    .card-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      margin-bottom: 24px;
+    }
+
+    .card-icon.purple { background: rgba(139, 92, 246, 0.15); }
+    .card-icon.blue { background: rgba(59, 130, 246, 0.15); }
+    .card-icon.green { background: rgba(16, 185, 129, 0.15); }
+    .card-icon.pink { background: rgba(236, 72, 153, 0.15); }
+    .card-icon.orange { background: rgba(249, 115, 22, 0.15); }
+    .card-icon.cyan { background: rgba(6, 182, 212, 0.15); }
+
+    .solution-card h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -0.3px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .solution-card p {
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+    }
+
+    .card-link {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--accent-purple);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: gap 0.3s;
+    }
+
+    .card-link:hover {
+      gap: 10px;
+    }
+
+    /* Process Section */
+    .process {
+      position: relative;
+      z-index: 1;
+      padding: 100px 48px;
+    }
+
+    .process-timeline {
+      display: flex;
+      gap: 0;
+      position: relative;
+    }
+
+    .process-step {
+      flex: 1;
+      padding: 40px 32px;
+      position: relative;
+      border-left: 1px solid var(--glass-border);
+    }
+
+    .process-step:first-child {
+      border-left: none;
+    }
+
+    .step-number {
+      font-size: 64px;
+      font-weight: 700;
+      color: rgba(139, 92, 246, 0.1);
+      line-height: 1;
+      margin-bottom: 20px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .process-step h3 {
+      font-size: 20px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .process-step p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* 3D Showcase Section */
+    .showcase {
+      position: relative;
+      z-index: 1;
+      padding: 100px 48px;
+    }
+
+    .showcase-container {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .showcase-3d {
+      width: 100%;
+      height: 500px;
+      position: relative;
+    }
+
+    #showcase-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .showcase-overlay {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      padding: 48px;
+      background: linear-gradient(to top, var(--bg-primary), transparent);
+    }
+
+    .showcase-overlay h3 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .showcase-overlay p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      max-width: 500px;
+    }
+
+    /* Testimonials */
+    .testimonials {
+      position: relative;
+      z-index: 1;
+      padding: 100px 48px;
+    }
+
+    .testimonials-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .testimonial-card {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 36px;
+      transition: all 0.3s;
+    }
+
+    .testimonial-card:hover {
+      border-color: rgba(139, 92, 246, 0.2);
+    }
+
+    .testimonial-stars {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 20px;
+      color: #fbbf24;
+      font-size: 14px;
+    }
+
+    .testimonial-card blockquote {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-style: normal;
+    }
+
+    .testimonial-author {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .author-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      font-weight: 700;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+    }
+
+    .author-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .author-role {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* CTA Section */
+    .cta {
+      position: relative;
+      z-index: 1;
+      padding: 100px 48px;
+    }
+
+    .cta-box {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(59, 130, 246, 0.1));
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 28px;
+      padding: 80px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-box::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(ellipse, rgba(139, 92, 246, 0.08) 0%, transparent 60%);
+      animation: rotate-slow 20s linear infinite;
+    }
+
+    @keyframes rotate-slow {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    .cta-box h2 {
+      font-size: clamp(32px, 4vw, 48px);
+      font-weight: 700;
+      letter-spacing: -1.5px;
+      margin-bottom: 16px;
+      position: relative;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .cta-box p {
+      font-size: 17px;
+      color: var(--text-secondary);
+      margin-bottom: 36px;
+      position: relative;
+    }
+
+    .cta-actions {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      position: relative;
+    }
+
+    /* Footer */
+    footer {
+      position: relative;
+      z-index: 1;
+      padding: 64px 48px 32px;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 48px;
+      margin-bottom: 48px;
+    }
+
+    .footer-brand .logo {
+      display: flex;
+      align-items: center;
+    }
+
+    .footer-brand p {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      margin-top: 16px;
+      max-width: 300px;
+    }
+
+    .footer-col h4 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 20px;
+      color: var(--text-secondary);
+    }
+
+    .footer-col a {
+      display: block;
+      font-size: 14px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      margin-bottom: 12px;
+      transition: color 0.3s;
+    }
+
+    .footer-col a:hover {
+      color: var(--text-primary);
+    }
+
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 32px;
+      border-top: 1px solid var(--glass-border);
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(40px);
+      transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .particles-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .solutions-grid { grid-template-columns: repeat(2, 1fr); }
+      .testimonials-grid { grid-template-columns: repeat(2, 1fr); }
+      .footer-top { grid-template-columns: 1fr 1fr; }
+      .process-timeline { flex-wrap: wrap; }
+      .process-step { flex: 1 1 50%; }
+      .nav-logo-icon { width: 47px; height: 29px; } /* 47/29 = 1.62 ≈ φ */
+      .nav-logo-text { font-size: 18px; }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 8px 24px; }
+      .nav-logo-icon { width: 42px; height: 26px; } /* 42/26 = 1.615 ≈ φ */
+      .nav-logo-text { font-size: 17px; }
+      .nav-center { display: none; }
+      .menu-btn { display: block; }
+      .hero { padding: 100px 24px 80px; }
+      .solutions { padding: 60px 24px; }
+      .process { padding: 60px 24px; }
+      .showcase { padding: 60px 24px; }
+      .testimonials { padding: 60px 24px; }
+      .cta { padding: 60px 24px; }
+      footer { padding: 48px 24px 24px; }
+      .solutions-grid { grid-template-columns: 1fr; }
+      .testimonials-grid { grid-template-columns: 1fr; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+      .stats-bar { padding: 0 24px 60px; }
+      .footer-top { grid-template-columns: 1fr; gap: 32px; }
+      .hero-actions { flex-direction: column; align-items: flex-start; }
+      .cta-box { padding: 48px 24px; }
+      .cta-actions { flex-direction: column; align-items: center; }
+      .process-timeline { flex-direction: column; }
+      .process-step { flex: auto; border-left: none; border-top: 1px solid var(--glass-border); }
+      .process-step:first-child { border-top: none; }
+      .showcase-3d { height: 350px; }
+      .footer-bottom { flex-direction: column; gap: 12px; text-align: center; }
+    }
+
+    /* Glow effects */
+    .glow-orb {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(80px);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .glow-1 {
+      width: 500px;
+      height: 500px;
+      background: rgba(139, 92, 246, 0.12);
+      top: -100px;
+      right: -100px;
+    }
+
+    .glow-2 {
+      width: 400px;
+      height: 400px;
+      background: rgba(59, 130, 246, 0.08);
+      bottom: -100px;
+      left: -100px;
+    }
+
+    .glow-3 {
+      width: 300px;
+      height: 300px;
+      background: rgba(236, 72, 153, 0.06);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* ===== TERMINAL CONTACT MODAL ===== */
+    .terminal-overlay {
+      display: flex;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      z-index: 9000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      opacity: 0;
+      pointer-events: none;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    .terminal-overlay.active {
+      opacity: 1;
+      pointer-events: all;
+      visibility: visible;
+    }
+
+    .terminal-window {
+      width: 100%;
+      max-width: 680px;
+      max-height: 90vh;
+      background: #0a0a12;
+      border: 1px solid rgba(139, 92, 246, 0.35);
+      border-radius: 14px;
+      box-shadow:
+        0 0 0 1px rgba(139, 92, 246, 0.1),
+        0 0 60px rgba(139, 92, 246, 0.18),
+        0 40px 80px rgba(0,0,0,0.7);
+      font-family: 'Courier New', 'Monaco', 'Menlo', 'Consolas', monospace;
+      overflow: hidden;
+      transform: scale(0.93) translateY(24px);
+      transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .terminal-overlay.active .terminal-window {
+      transform: scale(1) translateY(0);
+    }
+
+    .terminal-header {
+      background: #13131e;
+      padding: 13px 18px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      flex-shrink: 0;
+    }
+
+    .terminal-dots {
+      display: flex;
+      gap: 7px;
+    }
+
+    .terminal-dots span {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      cursor: pointer;
+      transition: filter 0.2s;
+    }
+
+    .terminal-dots span:hover { filter: brightness(1.3); }
+    .dot-red    { background: #ff5f57; }
+    .dot-yellow { background: #febc2e; }
+    .dot-green  { background: #28c840; }
+
+    .terminal-title {
+      flex: 1;
+      text-align: center;
+      font-size: 12px;
+      color: #5a5a6a;
+      letter-spacing: 0.5px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .terminal-close-btn {
+      background: none;
+      border: none;
+      color: #4a4a5a;
+      cursor: pointer;
+      font-size: 13px;
+      padding: 3px 7px;
+      border-radius: 4px;
+      transition: all 0.2s;
+      font-family: monospace;
+    }
+
+    .terminal-close-btn:hover {
+      color: #f0f0f5;
+      background: rgba(255,255,255,0.06);
+    }
+
+    .terminal-body {
+      padding: 20px 22px 22px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .terminal-body::-webkit-scrollbar { width: 4px; }
+    .terminal-body::-webkit-scrollbar-track { background: transparent; }
+    .terminal-body::-webkit-scrollbar-thumb {
+      background: rgba(139, 92, 246, 0.3);
+      border-radius: 2px;
+    }
+
+    .t-line {
+      font-size: 13px;
+      line-height: 1.7;
+      margin-bottom: 2px;
+    }
+
+    .t-prompt { color: #8b5cf6; font-weight: 700; }
+    .t-sep    { color: #3a3a4a; }
+    .t-path   { color: #3b82f6; }
+    .t-cmd    { color: #e2e2f0; }
+    .t-ok     { color: #10b981; }
+    .t-muted  { color: #5a5a6a; }
+
+    .terminal-cursor {
+      display: inline-block;
+      width: 8px;
+      height: 14px;
+      background: #8b5cf6;
+      margin-left: 3px;
+      vertical-align: middle;
+      border-radius: 1px;
+      animation: termBlink 1.1s step-end infinite;
+    }
+
+    @keyframes termBlink {
+      0%, 100% { opacity: 1; }
+      50%       { opacity: 0; }
+    }
+
+    /* Tab switcher */
+    .t-tabs {
+      display: flex;
+      gap: 3px;
+      margin: 18px 0 16px;
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.05);
+      padding: 4px;
+      border-radius: 9px;
+    }
+
+    .t-tab {
+      flex: 1;
+      background: none;
+      border: none;
+      color: #5a5a6a;
+      font-size: 11.5px;
+      font-family: 'Courier New', monospace;
+      padding: 7px 8px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .t-tab:hover {
+      color: #9a9aaa;
+      background: rgba(255,255,255,0.04);
+    }
+
+    .t-tab.active {
+      background: rgba(139, 92, 246, 0.14);
+      color: #a78bfa;
+      border: 1px solid rgba(139, 92, 246, 0.28);
+    }
+
+    /* Code block */
+    .t-code-block {
+      background: rgba(255,255,255,0.025);
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 9px;
+      padding: 14px 16px;
+      margin: 10px 0;
+      position: relative;
+    }
+
+    .t-code-label {
+      font-size: 10px;
+      color: #4a4a5a;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .t-code-content {
+      font-size: 12.5px;
+      line-height: 1.75;
+      color: #c8c8dc;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+
+    /* Syntax colors */
+    .t-kw { color: #a78bfa; }  /* keyword / command */
+    .t-st { color: #34d399; }  /* string / value */
+    .t-cm { color: #3a3a55; }  /* comment */
+    .t-fl { color: #60a5fa; }  /* flag / option */
+    .t-em { color: #f472b6; }  /* email / emphasis */
+    .t-sk { color: #fbbf24; }  /* skill name */
+
+    .t-copy-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: rgba(139, 92, 246, 0.12);
+      border: 1px solid rgba(139, 92, 246, 0.22);
+      color: #7c6fcd;
+      font-size: 10.5px;
+      padding: 4px 10px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-family: 'Space Grotesk', sans-serif;
+      letter-spacing: 0.3px;
+      transition: all 0.2s;
+    }
+
+    .t-copy-btn:hover {
+      background: rgba(139, 92, 246, 0.22);
+      color: #c4b5fd;
+    }
+
+    .t-copy-btn.copied {
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.28);
+      color: #34d399;
+    }
+
+    .t-note {
+      font-size: 11px;
+      color: #3d3d58;
+      margin-top: 8px;
+      line-height: 1.65;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .t-note a {
+      color: #5b5baa;
+      text-decoration: none;
+      border-bottom: 1px solid rgba(99,102,241,0.25);
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .t-note a:hover {
+      color: #818cf8;
+      border-color: rgba(129,140,248,0.5);
+    }
+
+    .t-panel { display: none; }
+    .t-panel.active { display: block; }
+
+    .t-desc {
+      color: #6a6a7a;
+      font-size: 12px;
+      margin-bottom: 10px;
+      font-family: 'Space Grotesk', sans-serif;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 600px) {
+      .terminal-window { border-radius: 10px; }
+      .terminal-body { padding: 16px; }
+      .t-tabs { flex-direction: column; }
+      .t-tab { text-align: left; }
+      .t-code-content { font-size: 11px; }
+    }
+
+    /* Mobile menu */
+    .mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(10, 10, 15, 0.98);
+      z-index: 999;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 32px;
+    }
+
+    .mobile-menu.active {
+      display: flex;
+    }
+
+    .mobile-menu a {
+      color: var(--text-primary);
+      text-decoration: none;
+      font-size: 24px;
+      font-weight: 600;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .mobile-menu .close-btn {
+      position: absolute;
+      top: 24px;
+      right: 24px;
+      background: none;
+      border: none;
+      color: var(--text-primary);
+      font-size: 24px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Custom Cursor -->
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="cursor-ring" id="cursorRing"></div>
+
+  <!-- Three.js Canvas (Hero 3D background) -->
+  <canvas id="three-canvas"></canvas>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu">
+    <button class="close-btn" onclick="document.getElementById('mobileMenu').classList.remove('active')">✕</button>
+    <a href="#solutions" onclick="document.getElementById('mobileMenu').classList.remove('active')">Giải Pháp</a>
+    <a href="#process" onclick="document.getElementById('mobileMenu').classList.remove('active')">Quy Trình</a>
+    <a href="#showcase" onclick="document.getElementById('mobileMenu').classList.remove('active')">Nền Tảng</a>
+    <a href="#testimonials" onclick="document.getElementById('mobileMenu').classList.remove('active')">Đối Tác</a>
+  </div>
+
+  <!-- Terminal Contact Modal -->
+  <div class="terminal-overlay" id="terminalOverlay">
+    <div class="terminal-window" id="terminalWindow">
+
+      <!-- Header bar -->
+      <div class="terminal-header">
+        <div class="terminal-dots">
+          <span class="dot-red"  title="Đóng" onclick="closeTerminal()"></span>
+          <span class="dot-yellow"></span>
+          <span class="dot-green"></span>
+        </div>
+        <div class="terminal-title">vnagent — ai-contact-terminal</div>
+        <button class="terminal-close-btn" onclick="closeTerminal()">✕</button>
+      </div>
+
+      <!-- Body -->
+      <div class="terminal-body">
+
+        <!-- Intro lines -->
+        <div class="t-line">
+          <span class="t-prompt">vnagent</span><span class="t-sep">@</span><span class="t-path">ai</span><span class="t-sep">:~$</span>
+          <span class="t-cmd"> connect <span style="color:#60a5fa">--mode</span>=contact</span>
+        </div>
+        <div class="t-line t-ok" style="margin-top:5px">✓ Kết nối thành công đến VNAgent.ai</div>
+        <div class="t-line t-muted">  Chọn phương thức liên hệ phù hợp với bạn:</div>
+
+        <!-- Tab switcher -->
+        <div class="t-tabs">
+          <button class="t-tab active" onclick="switchTermTab(1, this)">🤖 [1] Agent-to-Agent</button>
+          <button class="t-tab"        onclick="switchTermTab(2, this)">💻 [2] OpenClaw CLI</button>
+          <button class="t-tab"        onclick="switchTermTab(3, this)">🔑 [3] Pure CLI</button>
+        </div>
+
+        <!-- Panel 1: OpenClaw Prompt (Agent-to-Agent) -->
+        <div class="t-panel active" id="t-panel-1">
+          <div class="t-line t-muted" style="margin-bottom:10px">
+            <span class="t-prompt">$</span>
+            <span class="t-cmd"> openclaw prompt <span class="t-fl">--to</span> <span class="t-st">vnagent-contact</span></span>
+          </div>
+          <div class="t-desc">
+            Copy prompt này và paste vào <strong style="color:#a78bfa">OpenClaw</strong> của bạn.
+            Agent của bạn sẽ tự soạn và gửi đến agent của VNAgent — không cần mở email client.
+          </div>
+          <div class="t-code-block">
+            <div class="t-code-label">📋 OpenClaw Prompt — copy &amp; paste</div>
+            <div class="t-code-content" id="copy-p1">Liên hệ đội ngũ VNAgent.ai giúp tôi.
+Gửi email đến <span class="t-em">vnagent@agentmail.to</span> với nội dung:
+- Tên tôi: [tên của bạn]
+- Nhu cầu: [mô tả ngắn]
+- Liên hệ lại: [email hoặc số điện thoại]
+
+Dùng skill <span class="t-sk">agentmail</span> để gửi, xác nhận khi đã xong.</div>
+            <button class="t-copy-btn" onclick="termCopy('copy-p1', this)">Copy</button>
+          </div>
+          <div class="t-note">
+            Chưa có OpenClaw? →&nbsp;<a href="https://openclaw.ai" target="_blank" rel="noopener">openclaw.ai</a>
+            &nbsp;·&nbsp; Cần skill agentmail? →&nbsp;<a href="https://skills.sh/agentmail-to/agentmail-skills/agentmail" target="_blank" rel="noopener">skills.sh</a>
+          </div>
+        </div>
+
+        <!-- Panel 2: OpenClaw CLI -->
+        <div class="t-panel" id="t-panel-2">
+          <div class="t-line t-muted" style="margin-bottom:10px">
+            <span class="t-prompt">$</span>
+            <span class="t-cmd"> openclaw agent <span class="t-fl">--help</span></span>
+          </div>
+          <div class="t-desc">
+            Gửi trực tiếp từ terminal với một lệnh duy nhất. Agent xử lý toàn bộ — soạn, gửi, xác nhận.
+          </div>
+          <div class="t-code-block">
+            <div class="t-code-label">💻 Terminal Command</div>
+            <div class="t-code-content" id="copy-p2"><span class="t-kw">openclaw</span> agent \
+  <span class="t-fl">--message</span> <span class="t-st">"Gửi email đến vnagent@agentmail.to \
+  tiêu đề 'Liên hệ từ [Tên]' \
+  nội dung: [Mô tả nhu cầu của bạn]"</span> \
+  <span class="t-fl">--deliver</span></div>
+            <button class="t-copy-btn" onclick="termCopy('copy-p2', this)">Copy</button>
+          </div>
+          <div class="t-note">
+            Yêu cầu: <a href="https://openclaw.ai" target="_blank" rel="noopener">OpenClaw</a> đã cài đặt
+            + skill <a href="https://skills.sh/agentmail-to/agentmail-skills/agentmail" target="_blank" rel="noopener">agentmail</a> đã kích hoạt
+          </div>
+        </div>
+
+        <!-- Panel 3: Pure CLI (không dùng từ "hacker") -->
+        <div class="t-panel" id="t-panel-3">
+          <div class="t-line t-muted" style="margin-bottom:10px">
+            <span class="t-prompt">$</span>
+            <span class="t-cmd"> decode <span class="t-fl">--channel</span> <span class="t-st">contact</span></span>
+          </div>
+          <div class="t-desc">
+            Giải mã kênh liên hệ và mở thẳng trong email client. Không cần API key, không cần cài thêm gì.
+          </div>
+          <div class="t-code-block">
+            <div class="t-code-label">🔑 Decode &amp; Open</div>
+            <div class="t-code-content" id="copy-p3"><span class="t-cm"># macOS / Linux — decode &amp; mở email client:</span>
+<span class="t-kw">echo</span> <span class="t-st">"dm5hZ2VudEBhZ2VudG1haWwudG8="</span> | base64 -d \
+  | xargs -I{} <span class="t-kw">open</span> <span class="t-st">"mailto:{}?subject=VNAgent+Contact"</span>
+
+<span class="t-cm"># Chỉ muốn xem địa chỉ:</span>
+<span class="t-kw">echo</span> <span class="t-st">"dm5hZ2VudEBhZ2VudG1haWwudG8="</span> | base64 -d</div>
+            <button class="t-copy-btn" onclick="termCopy('copy-p3', this)">Copy</button>
+          </div>
+          <div class="t-note">
+            Địa chỉ được mã hóa base64 · Không cần API key · Gửi bằng bất kỳ email client nào
+          </div>
+        </div>
+
+        <!-- Blinking prompt at bottom -->
+        <div style="margin-top:18px" class="t-line">
+          <span class="t-prompt">vnagent</span><span class="t-sep">@ai:~$</span>
+          <span class="terminal-cursor"></span>
+        </div>
+
+      </div><!-- /.terminal-body -->
+    </div><!-- /.terminal-window -->
+  </div><!-- /.terminal-overlay -->
+
+  <!-- Navigation -->
+  <nav id="mainNav">
+    <a href="#hero" class="nav-logo">
+      <!-- Badge 55×34px (Fibonacci) · rx=7 đều 4 góc · VN 19px = Agent 21px × φ⁻¹ -->
+      <svg class="nav-logo-icon" width="55" height="34" viewBox="0 0 55 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="navGrad" x1="0" y1="0" x2="55" y2="34" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#8b5cf6"/>
+            <stop offset="100%" stop-color="#3b82f6"/>
+          </linearGradient>
+        </defs>
+        <rect width="55" height="34" rx="7" fill="url(#navGrad)"/>
+        <text
+          x="27.5" y="17"
+          font-family="'Space Grotesk', 'Inter', sans-serif"
+          font-size="19"
+          font-weight="800"
+          fill="white"
+          text-anchor="middle"
+          dominant-baseline="central"
+          letter-spacing="1.5">VN</text>
+      </svg>
+      <span class="nav-logo-text">Agent</span>
+    </a>
+    <div class="nav-center">
+      <a href="#solutions">Giải Pháp</a>
+      <a href="#process">Quy Trình</a>
+      <a href="#showcase">Nền Tảng</a>
+      <a href="#testimonials">Đối Tác</a>
+    </div>
+    <div class="nav-right">
+      <a href="javascript:void(0)" class="nav-btn btn-ghost" onclick="openTerminal()">Liên Hệ →</a>
+      <button class="nav-btn btn-primary" onclick="document.getElementById('cta').scrollIntoView({behavior:'smooth'})">Bắt Đầu</button>
+      <button class="menu-btn" onclick="document.getElementById('mobileMenu').classList.add('active')">MENU ••</button>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero" id="hero">
+    <div class="glow-orb glow-1"></div>
+    <div class="glow-orb glow-2"></div>
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="badge-dot">✓</span>
+        Công nghệ AI Agent tiên tiến nhất
+      </div>
+      <h1>Kiến tạo tương lai với <span class="gradient-text">AI Agent</span> thông minh</h1>
+      <p>Tại VNAgent, chúng tôi chuyên hỗ trợ và đầu tư vào các doanh nghiệp 1-THÀNH-VIÊN.</p>
+      <div class="hero-actions">
+        <a href="#solutions" class="btn-large btn-glow">Khám Phá Giải Pháp →</a>
+        <a href="#showcase" class="btn-large btn-outline">Xem Nền Tảng</a>
+      </div>
+    </div>
+
+    <div class="scroll-indicator">
+      <div class="scroll-line"></div>
+      CUỘN ĐỂ KHÁM PHÁ
+    </div>
+    <div class="corner-marks">
+      <span class="cross-mark">+</span>
+      <span class="cross-mark">+</span>
+      <span class="cross-mark">+</span>
+      <span class="cross-mark">+</span>
+    </div>
+  </section>
+
+  <!-- Stats Bar -->
+  <section class="stats-bar reveal">
+    <div class="stats-grid">
+      <div class="stat-item">
+        <div class="stat-number" data-target="2" data-suffix="">0</div>
+        <div class="stat-label">Thị Trường (Mỹ & VN)</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-target="99" data-suffix="%">0</div>
+        <div class="stat-label">Độ Chính Xác AI</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-target="24" data-suffix="/7">0</div>
+        <div class="stat-label">Hỗ Trợ Liên Tục</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-number" data-target="10" data-suffix="x">0</div>
+        <div class="stat-label">Tăng Hiệu Suất</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Solutions Section -->
+  <section class="solutions" id="solutions">
+    <div class="section-header reveal">
+      <div class="section-tag">✦ Giải Pháp</div>
+      <h2 class="section-title">Công nghệ AI Agent<br>cho doanh nghiệp thực</h2>
+      <p class="section-subtitle">Từ tự động hóa thông minh đến phân tích dữ liệu chuyên sâu, bộ giải pháp AI của chúng tôi giải quyết những thách thức vận hành quan trọng nhất của bạn.</p>
+    </div>
+    <div class="solutions-grid">
+      <div class="solution-card reveal">
+        <div class="card-icon purple">🧠</div>
+        <h3>AI Agent Thông Minh</h3>
+        <p>Các AI agent tự chủ xử lý quy trình phức tạp, tương tác khách hàng và ra quyết định với độ chính xác cao, hỗ trợ doanh nghiệp 1-thành-viên vận hành hiệu quả.</p>
+        <a href="#" class="card-link">Tìm hiểu thêm →</a>
+      </div>
+      <div class="solution-card reveal">
+        <div class="card-icon blue">🤖</div>
+        <h3>Robot Kinh Doanh</h3>
+        <p>Giải pháp robot thông minh cho doanh nghiệp tại thị trường Mỹ và Việt Nam. Tự động hóa quy trình bán hàng, chăm sóc khách hàng và vận hành kho bãi.</p>
+        <a href="#" class="card-link">Tìm hiểu thêm →</a>
+      </div>
+      <div class="solution-card reveal">
+        <div class="card-icon green">⚙️</div>
+        <h3>Tự Động Hóa Quy Trình</h3>
+        <p>Loại bỏ công việc lặp đi lặp lại và tối ưu hoạt động. Quy trình AI của chúng tôi giảm thời gian xử lý đến 80% trong khi nâng cao độ chính xác.</p>
+        <a href="#" class="card-link">Tìm hiểu thêm →</a>
+      </div>
+      <div class="solution-card reveal">
+        <div class="card-icon pink">💬</div>
+        <h3>AI Hội Thoại</h3>
+        <p>Triển khai chatbot và trợ lý giọng nói tinh vi, hiểu ngữ cảnh, cảm xúc và sắc thái bằng tiếng Việt và tiếng Anh theo thời gian thực.</p>
+        <a href="#" class="card-link">Tìm hiểu thêm →</a>
+      </div>
+      <div class="solution-card reveal">
+        <div class="card-icon orange">📊</div>
+        <h3>Phân Tích Dự Đoán</h3>
+        <p>Biến dữ liệu thô thành dự báo hành động. Mô hình AI nhận diện xu hướng, rủi ro và cơ hội trước khi đối thủ nhận ra.</p>
+        <a href="#" class="card-link">Tìm hiểu thêm →</a>
+      </div>
+      <div class="solution-card reveal">
+        <div class="card-icon cyan">🔗</div>
+        <h3>Hỗ Trợ Doanh Nghiệp 1-TV</h3>
+        <p>Đầu tư và hỗ trợ toàn diện cho doanh nghiệp 1-thành-viên: từ setup AI, vận hành tự động đến mở rộng thị trường Mỹ - Việt Nam.</p>
+        <a href="#" class="card-link">Tìm hiểu thêm →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Process Section -->
+  <section class="process" id="process">
+    <div class="section-header reveal">
+      <div class="section-tag">✦ Quy Trình</div>
+      <h2 class="section-title">Từ ý tưởng đến<br>triển khai trong tuần</h2>
+      <p class="section-subtitle">Phương pháp đã được chứng minh đảm bảo triển khai AI nhanh chóng, đáng tin cậy và phù hợp với nhu cầu kinh doanh cụ thể của bạn.</p>
+    </div>
+    <div class="process-timeline reveal">
+      <div class="process-step">
+        <div class="step-number">01</div>
+        <h3>Khám Phá</h3>
+        <p>Chúng tôi phân tích quy trình làm việc, dữ liệu và mục tiêu chiến lược để xác định cơ hội AI có tác động cao nhất cho doanh nghiệp của bạn.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-number">02</div>
+        <h3>Thiết Kế</h3>
+        <p>Đội ngũ kiến trúc sư AI thiết kế giải pháp tùy chỉnh, lựa chọn mô hình tối ưu và chiến lược tích hợp phù hợp hạ tầng của bạn.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-number">03</div>
+        <h3>Xây Dựng</h3>
+        <p>Phát triển nhanh với prototype và vòng phản hồi liên tục, đảm bảo giải pháp đáp ứng chính xác yêu cầu đề ra.</p>
+      </div>
+      <div class="process-step">
+        <div class="step-number">04</div>
+        <h3>Mở Rộng</h3>
+        <p>Triển khai sản xuất mượt mà với giám sát, tối ưu hóa và hỗ trợ liên tục để tối đa ROI khi nhu cầu phát triển.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3D Showcase Section -->
+  <section class="showcase" id="showcase">
+    <div class="section-header reveal">
+      <div class="section-tag">✦ Nền Tảng</div>
+      <h2 class="section-title">Hạ tầng AI mà đội ngũ<br>của bạn xứng đáng có</h2>
+    </div>
+    <div class="showcase-container reveal">
+      <div class="showcase-3d">
+        <canvas id="showcase-canvas"></canvas>
+      </div>
+      <div class="showcase-overlay">
+        <h3>VNAgent Neural Platform</h3>
+        <p>Trung tâm điều khiển thống nhất cho mọi hoạt động AI. Giám sát, quản lý và tối ưu hóa mọi agent, mô hình và quy trình từ một bảng điều khiển thông minh duy nhất.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Testimonials / Vision -->
+  <section class="testimonials" id="testimonials">
+    <div class="section-header reveal">
+      <div class="section-tag">✦ Tầm Nhìn</div>
+      <h2 class="section-title">Cam kết đồng hành<br>cùng doanh nghiệp</h2>
+    </div>
+    <div class="testimonials-grid">
+      <div class="testimonial-card reveal">
+        <div class="testimonial-stars">★★★★★</div>
+        <blockquote>"Chúng tôi tin vào sức mạnh của AI Agent trong việc giúp doanh nghiệp 1-thành-viên cạnh tranh ngang tầm với các tập đoàn lớn."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">V</div>
+          <div>
+            <div class="author-name">VNAgent Team</div>
+            <div class="author-role">Tầm Nhìn Công Ty</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal">
+        <div class="testimonial-stars">★★★★★</div>
+        <blockquote>"Robot và AI sẽ là trợ thủ đắc lực cho mọi doanh nghiệp. Chúng tôi mang công nghệ tiên tiến nhất đến 2 thị trường Mỹ và Việt Nam."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">R</div>
+          <div>
+            <div class="author-name">Robot Division</div>
+            <div class="author-role">Bộ Phận Kinh Doanh Robot</div>
+          </div>
+        </div>
+      </div>
+      <div class="testimonial-card reveal">
+        <div class="testimonial-stars">★★★★★</div>
+        <blockquote>"Đầu tư vào doanh nghiệp 1-thành-viên không chỉ là tài chính, mà còn là công nghệ, kiến thức và hệ sinh thái AI hoàn chỉnh."</blockquote>
+        <div class="testimonial-author">
+          <div class="author-avatar">I</div>
+          <div>
+            <div class="author-name">Investment Team</div>
+            <div class="author-role">Bộ Phận Đầu Tư</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta" id="cta">
+    <div class="cta-box reveal">
+      <h2>Sẵn sàng chuyển đổi<br>doanh nghiệp với AI?</h2>
+      <p>Hãy để VNAgent đồng hành cùng bạn trên hành trình số hóa và tự động hóa thông minh.</p>
+      <div class="cta-actions">
+        <a href="#" class="btn-large btn-glow">Tư Vấn Miễn Phí →</a>
+        <a href="#" class="btn-large btn-outline">Xem Bảng Giá</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <div class="logo">
+          <!-- Footer badge: 44×27px — cùng viewBox, scale ~80%, tỉ số 44/27 = 1.629 ≈ φ -->
+          <svg class="logo-icon" width="44" height="27" viewBox="0 0 55 34" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="footerGrad" x1="0" y1="0" x2="55" y2="34" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#8b5cf6"/>
+                <stop offset="100%" stop-color="#3b82f6"/>
+              </linearGradient>
+            </defs>
+            <rect width="55" height="34" rx="7" fill="url(#footerGrad)"/>
+            <text
+              x="27.5" y="17"
+              font-family="'Space Grotesk', 'Inter', sans-serif"
+              font-size="19"
+              font-weight="800"
+              fill="white"
+              text-anchor="middle"
+              dominant-baseline="central"
+              letter-spacing="1.5">VN</text>
+          </svg>
+          <span style="padding-left:4px;">Agent</span>
+        </div>
+        <p>Hỗ trợ và đầu tư vào doanh nghiệp 1-thành-viên, kinh doanh Robot tại thị trường Mỹ và Việt Nam với công nghệ AI Agent tiên tiến.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Giải Pháp</h4>
+        <a href="#">AI Agent</a>
+        <a href="#">Robot Kinh Doanh</a>
+        <a href="#">Tự Động Hóa</a>
+        <a href="#">AI Hội Thoại</a>
+        <a href="#">Phân Tích Dữ Liệu</a>
+      </div>
+      <div class="footer-col">
+        <h4>Công Ty</h4>
+        <a href="#">Giới Thiệu</a>
+        <a href="#">Tuyển Dụng</a>
+        <a href="#">Blog</a>
+        <a href="javascript:void(0)" onclick="openTerminal()">Liên Hệ</a>
+      </div>
+      <div class="footer-col">
+        <h4>Tài Nguyên</h4>
+        <a href="#">Tài Liệu</a>
+        <a href="#">API Reference</a>
+        <a href="#">Case Studies</a>
+        <a href="#">Trạng Thái Hệ Thống</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>&copy; 2026 VNAgent AI. Mọi quyền được bảo lưu.</span>
+      <span>vnagent.ai</span>
+    </div>
+  </footer>
+
+  <!-- Three.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    // ===== CUSTOM CURSOR =====
+    const dot = document.getElementById('cursorDot');
+    const ring = document.getElementById('cursorRing');
+    let mouseX = 0, mouseY = 0;
+    let ringX = 0, ringY = 0;
+
+    document.addEventListener('mousemove', e => {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+      dot.style.left = mouseX - 4 + 'px';
+      dot.style.top = mouseY - 4 + 'px';
+    });
+
+    function animateCursor() {
+      ringX += (mouseX - ringX) * 0.15;
+      ringY += (mouseY - ringY) * 0.15;
+      ring.style.left = ringX + 'px';
+      ring.style.top = ringY + 'px';
+      requestAnimationFrame(animateCursor);
+    }
+    animateCursor();
+
+    document.querySelectorAll('a, button, .solution-card, .testimonial-card').forEach(el => {
+      el.addEventListener('mouseenter', () => {
+        ring.style.width = '60px';
+        ring.style.height = '60px';
+        ring.style.borderColor = 'rgba(139,92,246,0.8)';
+      });
+      el.addEventListener('mouseleave', () => {
+        ring.style.width = '40px';
+        ring.style.height = '40px';
+        ring.style.borderColor = 'rgba(139,92,246,0.5)';
+      });
+    });
+
+    if ('ontouchstart' in window) {
+      dot.style.display = 'none';
+      ring.style.display = 'none';
+    }
+
+    // ===== NAV SCROLL =====
+    window.addEventListener('scroll', () => {
+      const nav = document.getElementById('mainNav');
+      if (window.scrollY > 50) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+
+    // ===== REVEAL ON SCROLL =====
+    const reveals = document.querySelectorAll('.reveal');
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    reveals.forEach(el => revealObserver.observe(el));
+
+    // ===== COUNTER ANIMATION =====
+    const counters = document.querySelectorAll('.stat-number');
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const target = parseInt(entry.target.dataset.target);
+          const suffix = entry.target.dataset.suffix || '+';
+          let current = 0;
+          const increment = target / 60;
+          const timer = setInterval(() => {
+            current += increment;
+            if (current >= target) {
+              entry.target.textContent = target + suffix;
+              clearInterval(timer);
+            } else {
+              entry.target.textContent = Math.floor(current);
+            }
+          }, 25);
+          counterObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    counters.forEach(c => counterObserver.observe(c));
+
+    // ===== THREE.JS HERO SCENE (Background) =====
+    (function() {
+      const canvas = document.getElementById('three-canvas');
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.shadowMap.enabled = true;
+      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+      camera.position.set(5, 3, 8);
+      camera.lookAt(0, 0, 0);
+
+      const ambientLight = new THREE.AmbientLight(0x404060, 0.6);
+      scene.add(ambientLight);
+
+      const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+      dirLight.position.set(5, 8, 5);
+      dirLight.castShadow = true;
+      scene.add(dirLight);
+
+      const purpleLight = new THREE.PointLight(0x8b5cf6, 2, 20);
+      purpleLight.position.set(-3, 3, 2);
+      scene.add(purpleLight);
+
+      const blueLight = new THREE.PointLight(0x3b82f6, 1.5, 20);
+      blueLight.position.set(3, -2, 4);
+      scene.add(blueLight);
+
+      const pinkLight = new THREE.PointLight(0xec4899, 1, 15);
+      pinkLight.position.set(0, 4, -3);
+      scene.add(pinkLight);
+
+      const matWhite = new THREE.MeshStandardMaterial({ color: 0xd0d0d8, roughness: 0.3, metalness: 0.1 });
+      const matDark = new THREE.MeshStandardMaterial({ color: 0x1a1a2e, roughness: 0.4, metalness: 0.2 });
+      const matPurple = new THREE.MeshStandardMaterial({ color: 0x8b5cf6, roughness: 0.25, metalness: 0.3, emissive: 0x2a1a4e, emissiveIntensity: 0.3 });
+
+      const crossGroup = new THREE.Group();
+
+      function createConnector(material) {
+        const group = new THREE.Group();
+        const cylGeo = new THREE.CylinderGeometry(0.22, 0.22, 1.0, 16);
+        const sphGeo = new THREE.SphereGeometry(0.3, 16, 16);
+        const center = new THREE.Mesh(sphGeo, material);
+        group.add(center);
+
+        const directions = [[1,0,0], [-1,0,0], [0,1,0], [0,-1,0], [0,0,1], [0,0,-1]];
+        directions.forEach(([x,y,z]) => {
+          const arm = new THREE.Mesh(cylGeo, material);
+          arm.position.set(x*0.5, y*0.5, z*0.5);
+          if (x !== 0) arm.rotation.z = Math.PI/2;
+          if (z !== 0) arm.rotation.x = Math.PI/2;
+          group.add(arm);
+          const capGeo = new THREE.CylinderGeometry(0.26, 0.26, 0.15, 16);
+          const cap = new THREE.Mesh(capGeo, material);
+          cap.position.set(x*1.0, y*1.0, z*1.0);
+          if (x !== 0) cap.rotation.z = Math.PI/2;
+          if (z !== 0) cap.rotation.x = Math.PI/2;
+          const holeGeo = new THREE.TorusGeometry(0.12, 0.04, 8, 16);
+          const hole = new THREE.Mesh(holeGeo, material);
+          hole.position.set(x*1.05, y*1.05, z*1.05);
+          if (x !== 0) hole.rotation.y = Math.PI/2;
+          if (z !== 0) hole.rotation.x = Math.PI/2;
+          group.add(cap);
+          group.add(hole);
+        });
+        return group;
+      }
+
+      const connectors = [];
+      const positions = [
+        { pos: [-3, -1.5, -1], mat: matWhite, scale: 0.8 },
+        { pos: [-1.8, -0.2, 0], mat: matDark, scale: 0.75 },
+        { pos: [-0.5, 1, 0.5], mat: matDark, scale: 0.7 },
+        { pos: [0.8, 1.8, -0.5], mat: matPurple, scale: 0.85 },
+        { pos: [2.2, 1.2, 0.3], mat: matPurple, scale: 0.9 },
+        { pos: [3.5, 0, -0.8], mat: matPurple, scale: 0.65 },
+        { pos: [3, -1.5, 0.5], mat: matDark, scale: 0.6 },
+        { pos: [-2.5, 1, 1], mat: matWhite, scale: 0.7 },
+      ];
+
+      positions.forEach((item, i) => {
+        const conn = createConnector(item.mat);
+        conn.position.set(...item.pos);
+        conn.scale.setScalar(item.scale);
+        conn.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, Math.random()*Math.PI);
+        crossGroup.add(conn);
+        connectors.push({ mesh: conn, basePos: item.pos, speed: 0.3 + Math.random()*0.4, offset: Math.random()*Math.PI*2 });
+      });
+
+      function createWire(start, end, color) {
+        const points = [];
+        const segments = 20;
+        for (let i = 0; i <= segments; i++) {
+          const t = i / segments;
+          const x = start[0] + (end[0] - start[0]) * t;
+          const y = start[1] + (end[1] - start[1]) * t + Math.sin(t * Math.PI) * 0.5;
+          const z = start[2] + (end[2] - start[2]) * t + Math.cos(t * Math.PI) * 0.3;
+          points.push(new THREE.Vector3(x, y, z));
+        }
+        const curve = new THREE.CatmullRomCurve3(points);
+        const tubeGeo = new THREE.TubeGeometry(curve, 20, 0.02, 8, false);
+        const wireMat = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.5, roughness: 0.5 });
+        return new THREE.Mesh(tubeGeo, wireMat);
+      }
+
+      const wireColors = [0x8b5cf6, 0x3b82f6, 0xec4899, 0x10b981, 0xf59e0b];
+      for (let i = 0; i < positions.length - 1; i++) {
+        if (Math.random() > 0.4) {
+          const wire = createWire(positions[i].pos, positions[i+1].pos, wireColors[i % wireColors.length]);
+          crossGroup.add(wire);
+        }
+      }
+
+      const particlesGeo = new THREE.BufferGeometry();
+      const pCount = 200;
+      const pPositions = new Float32Array(pCount * 3);
+      for (let i = 0; i < pCount * 3; i++) {
+        pPositions[i] = (Math.random() - 0.5) * 20;
+      }
+      particlesGeo.setAttribute('position', new THREE.BufferAttribute(pPositions, 3));
+      const particlesMat = new THREE.PointsMaterial({
+        size: 0.03,
+        color: 0x8b5cf6,
+        transparent: true,
+        opacity: 0.6,
+        sizeAttenuation: true
+      });
+      const particles = new THREE.Points(particlesGeo, particlesMat);
+      scene.add(particles);
+
+      crossGroup.position.set(2, 0, 0);
+      scene.add(crossGroup);
+
+      let targetRotX = 0, targetRotY = 0;
+      document.addEventListener('mousemove', e => {
+        targetRotY = (e.clientX / window.innerWidth - 0.5) * 0.4;
+        targetRotX = (e.clientY / window.innerHeight - 0.5) * 0.2;
+      });
+
+      let scrollProgress = 0;
+      window.addEventListener('scroll', () => {
+        scrollProgress = window.scrollY / (document.body.scrollHeight - window.innerHeight);
+      });
+
+      function animate() {
+        requestAnimationFrame(animate);
+        const time = performance.now() * 0.001;
+
+        connectors.forEach((c) => {
+          c.mesh.rotation.x += 0.003 * c.speed;
+          c.mesh.rotation.y += 0.005 * c.speed;
+          c.mesh.position.y = c.basePos[1] + Math.sin(time * c.speed + c.offset) * 0.15;
+          c.mesh.position.x = c.basePos[0] + Math.cos(time * c.speed * 0.7 + c.offset) * 0.08;
+        });
+
+        crossGroup.rotation.y += (targetRotY * 0.5 - crossGroup.rotation.y) * 0.02;
+        crossGroup.rotation.x += (targetRotX * 0.3 - crossGroup.rotation.x) * 0.02;
+
+        camera.position.y = 3 - scrollProgress * 6;
+        camera.position.z = 8 - scrollProgress * 3;
+
+        particles.rotation.y += 0.0003;
+        particles.rotation.x += 0.0001;
+
+        purpleLight.position.x = Math.sin(time * 0.5) * 4;
+        purpleLight.position.z = Math.cos(time * 0.5) * 3;
+        blueLight.position.y = Math.sin(time * 0.3) * 3;
+
+        renderer.render(scene, camera);
+      }
+      animate();
+
+      window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+      });
+    })();
+
+
+    // ===== SHOWCASE SCENE =====
+    (function() {
+      const canvas = document.getElementById('showcase-canvas');
+      const container = canvas.parentElement;
+      const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.setClearColor(0x0a0a0f, 1);
+
+      function setSize() {
+        const w = container.clientWidth;
+        const h = container.clientHeight;
+        renderer.setSize(w, h);
+        return { w, h };
+      }
+      let { w, h } = setSize();
+
+      const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x0a0a0f, 0.04);
+      const camera = new THREE.PerspectiveCamera(45, w / h, 0.1, 500);
+      camera.position.set(12, 10, 12);
+      camera.lookAt(0, 0, 0);
+
+      scene.add(new THREE.AmbientLight(0x404060, 0.5));
+      const dl = new THREE.DirectionalLight(0xffffff, 0.7);
+      dl.position.set(10, 15, 8);
+      scene.add(dl);
+      const pl1 = new THREE.PointLight(0x8b5cf6, 2, 30);
+      pl1.position.set(-5, 5, 3);
+      scene.add(pl1);
+      const pl2 = new THREE.PointLight(0x3b82f6, 1.5, 25);
+      pl2.position.set(5, 3, -5);
+      scene.add(pl2);
+      const pl3 = new THREE.PointLight(0x10b981, 1, 20);
+      pl3.position.set(0, 6, 0);
+      scene.add(pl3);
+
+      const gridHelper = new THREE.GridHelper(24, 24, 0x1a1a2e, 0x1a1a2e);
+      gridHelper.position.y = -0.01;
+      scene.add(gridHelper);
+
+      const matGlass = new THREE.MeshStandardMaterial({ color: 0x2a2a40, roughness: 0.1, metalness: 0.9, transparent: true, opacity: 0.7 });
+      const matFrame = new THREE.MeshStandardMaterial({ color: 0xd0d0d8, roughness: 0.3, metalness: 0.5 });
+      const matGreen = new THREE.MeshStandardMaterial({ color: 0x22c55e, roughness: 0.8, metalness: 0.0 });
+      const matEmissivePurple = new THREE.MeshStandardMaterial({ color: 0x8b5cf6, emissive: 0x8b5cf6, emissiveIntensity: 0.8, roughness: 0.3 });
+      const matEmissiveBlue = new THREE.MeshStandardMaterial({ color: 0x3b82f6, emissive: 0x3b82f6, emissiveIntensity: 0.6, roughness: 0.3 });
+      const matEmissivePink = new THREE.MeshStandardMaterial({ color: 0xec4899, emissive: 0xec4899, emissiveIntensity: 0.5, roughness: 0.3 });
+      const matConcrete = new THREE.MeshStandardMaterial({ color: 0x3a3a4a, roughness: 0.8, metalness: 0.1 });
+      const matSolar = new THREE.MeshStandardMaterial({ color: 0x1e3a5f, roughness: 0.2, metalness: 0.7 });
+
+      const city = new THREE.Group();
+
+      const baseGeo = new THREE.BoxGeometry(16, 0.4, 10);
+      const base = new THREE.Mesh(baseGeo, matConcrete);
+      base.position.y = -0.2;
+      city.add(base);
+
+      function createTower(x, z, w, d, height, mat) {
+        const group = new THREE.Group();
+        const body = new THREE.Mesh(new THREE.BoxGeometry(w, height, d), mat);
+        body.position.set(x, height / 2, z);
+        group.add(body);
+        for (let i = 0.5; i < height; i += 0.6) {
+          const windowLine = new THREE.Mesh(new THREE.BoxGeometry(w + 0.02, 0.05, d + 0.02), matFrame);
+          windowLine.position.set(x, i, z);
+          group.add(windowLine);
+        }
+        const roofGreen = new THREE.Mesh(new THREE.BoxGeometry(w - 0.2, 0.15, d - 0.2), matGreen);
+        roofGreen.position.set(x, height + 0.07, z);
+        group.add(roofGreen);
+        return group;
+      }
+
+      city.add(createTower(-5, -2, 2.5, 2, 6, matGlass));
+      city.add(createTower(-5, 2, 2, 1.8, 4.5, matGlass));
+      city.add(createTower(5, -3, 2, 2, 5, matGlass));
+
+      const domeGroup = new THREE.Group();
+      const domeBase = new THREE.Mesh(new THREE.CylinderGeometry(2.5, 2.5, 2, 32), matGlass);
+      domeBase.position.set(0, 1, 0);
+      domeGroup.add(domeBase);
+      const dome = new THREE.Mesh(new THREE.SphereGeometry(2.3, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2), matGlass);
+      dome.position.set(0, 2, 0);
+      domeGroup.add(dome);
+      const glowRing = new THREE.Mesh(new THREE.TorusGeometry(2.6, 0.08, 8, 64), matEmissivePurple);
+      glowRing.rotation.x = Math.PI / 2;
+      glowRing.position.set(0, 2.2, 0);
+      domeGroup.add(glowRing);
+      const greenTop = new THREE.Mesh(new THREE.CylinderGeometry(1.5, 2, 0.2, 32), matGreen);
+      greenTop.position.set(0, 2.1, 0);
+      domeGroup.add(greenTop);
+      city.add(domeGroup);
+
+      function createDisplay(x, y, z, w, h, rotY, mat) {
+        const display = new THREE.Mesh(new THREE.BoxGeometry(w, h, 0.05), mat);
+        display.position.set(x, y, z);
+        display.rotation.y = rotY;
+        return display;
+      }
+
+      city.add(createDisplay(-3, 3.5, -2, 1.8, 1, 0, matEmissivePurple));
+      city.add(createDisplay(3, 2.8, -1, 1.5, 0.8, 0.3, matEmissiveBlue));
+      city.add(createDisplay(1.5, 3, 3.5, 2, 1.2, Math.PI, matEmissivePink));
+
+      function createWalkway(x1, z1, x2, z2, y) {
+        const dx = x2 - x1, dz = z2 - z1;
+        const length = Math.sqrt(dx * dx + dz * dz);
+        const angle = Math.atan2(dz, dx);
+        const walkway = new THREE.Mesh(new THREE.BoxGeometry(length, 0.08, 0.6), matFrame);
+        walkway.position.set((x1 + x2) / 2, y, (z1 + z2) / 2);
+        walkway.rotation.y = -angle;
+        return walkway;
+      }
+
+      city.add(createWalkway(-3, -1, -1, 0, 2.5));
+      city.add(createWalkway(1, 0, 3.5, -1.5, 2));
+      city.add(createWalkway(-3, 2, 0, 1, 3));
+
+      function createSolarPanel(x, y, z, rotX) {
+        const panel = new THREE.Mesh(new THREE.BoxGeometry(1.2, 0.04, 0.8), matSolar);
+        panel.position.set(x, y, z);
+        panel.rotation.x = rotX || -0.3;
+        return panel;
+      }
+
+      city.add(createSolarPanel(-5, 6.2, -2.2, -0.3));
+      city.add(createSolarPanel(-5, 6.2, -1.4, -0.3));
+      city.add(createSolarPanel(5, 5.2, -3.2, -0.3));
+      city.add(createSolarPanel(5, 5.2, -2.4, -0.3));
+
+      const wedgeShape = new THREE.Shape();
+      wedgeShape.moveTo(0, 0);
+      wedgeShape.lineTo(3, 0);
+      wedgeShape.lineTo(3, 2);
+      wedgeShape.lineTo(0, 3.5);
+      wedgeShape.lineTo(0, 0);
+      const extrudeSettings = { depth: 2, bevelEnabled: false };
+      const wedgeGeo = new THREE.ExtrudeGeometry(wedgeShape, extrudeSettings);
+      const wedge = new THREE.Mesh(wedgeGeo, matGlass);
+      wedge.position.set(2.5, 0, 1);
+      wedge.rotation.y = -0.5;
+      city.add(wedge);
+
+      const wedgeGreen = new THREE.Mesh(new THREE.BoxGeometry(2.8, 0.15, 1.8), matGreen);
+      wedgeGreen.position.set(4, 2.5, 2);
+      wedgeGreen.rotation.z = -0.25;
+      wedgeGreen.rotation.y = -0.5;
+      city.add(wedgeGreen);
+
+      const roundBld = new THREE.Mesh(new THREE.CylinderGeometry(1.2, 1.2, 3, 24), matGlass);
+      roundBld.position.set(4.5, 1.5, 3);
+      city.add(roundBld);
+      const roundTop = new THREE.Mesh(new THREE.CylinderGeometry(1, 1.2, 0.2, 24), matGreen);
+      roundTop.position.set(4.5, 3, 3);
+      city.add(roundTop);
+
+      function createBeam(x, z, height, color) {
+        const mat = new THREE.MeshStandardMaterial({
+          color, emissive: color, emissiveIntensity: 1, transparent: true, opacity: 0.4
+        });
+        const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, height, 8), mat);
+        beam.position.set(x, height / 2, z);
+        return beam;
+      }
+
+      const beams = [];
+      [[-2, -3], [1, -2], [3, 1], [-4, 1], [0, 4], [6, -1]].forEach(([x, z]) => {
+        const bh = 3 + Math.random() * 5;
+        const colors = [0x8b5cf6, 0x3b82f6, 0x10b981];
+        const beam = createBeam(x, z, bh, colors[Math.floor(Math.random() * 3)]);
+        city.add(beam);
+        beams.push(beam);
+      });
+
+      function createTree(x, z) {
+        const g = new THREE.Group();
+        const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.5, 8), new THREE.MeshStandardMaterial({ color: 0x5a3a20 }));
+        trunk.position.set(x, 0.25, z);
+        g.add(trunk);
+        const foliage = new THREE.Mesh(new THREE.SphereGeometry(0.3, 8, 8), matGreen);
+        foliage.position.set(x, 0.65, z);
+        g.add(foliage);
+        return g;
+      }
+
+      [[-6.5, -0.5], [-6.5, 1], [-6.5, 2.5], [6.5, 0], [6.5, 2], [-1, -4], [1, -4], [3, -4.5], [-3, 4], [-1, 4], [1, 4.2]].forEach(([x, z]) => {
+        city.add(createTree(x, z));
+      });
+
+      const fountainBase = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 0.9, 0.3, 24), matFrame);
+      fountainBase.position.set(-2, 0.15, 3.5);
+      city.add(fountainBase);
+      const fountainWater = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.1, 24),
+        new THREE.MeshStandardMaterial({ color: 0x3b82f6, emissive: 0x1e40af, emissiveIntensity: 0.3, transparent: true, opacity: 0.5 }));
+      fountainWater.position.set(-2, 0.35, 3.5);
+      city.add(fountainWater);
+
+      scene.add(city);
+
+      let sMouseX = 0;
+      container.addEventListener('mousemove', e => {
+        const rect = container.getBoundingClientRect();
+        sMouseX = ((e.clientX - rect.left) / rect.width - 0.5) * 2;
+      });
+
+      function animateShowcase() {
+        requestAnimationFrame(animateShowcase);
+        const t = performance.now() * 0.001;
+
+        city.rotation.y += 0.002;
+        city.rotation.y += sMouseX * 0.005;
+
+        beams.forEach((beam, i) => {
+          beam.material.opacity = 0.2 + Math.sin(t * 2 + i) * 0.2;
+          beam.scale.y = 0.8 + Math.sin(t * 1.5 + i * 0.5) * 0.2;
+        });
+
+        glowRing.rotation.z = t * 0.5;
+        pl1.position.x = Math.sin(t * 0.3) * 8;
+        pl2.position.z = Math.cos(t * 0.4) * 8;
+
+        renderer.render(scene, camera);
+      }
+
+      animateShowcase();
+
+      window.addEventListener('resize', () => {
+        const { w, h } = setSize();
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+      });
+    })();
+
+    // ===== TERMINAL CONTACT MODAL =====
+    function openTerminal() {
+      const overlay = document.getElementById('terminalOverlay');
+      overlay.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeTerminal() {
+      const overlay = document.getElementById('terminalOverlay');
+      overlay.classList.remove('active');
+      document.body.style.overflow = '';
+    }
+
+    // Close on backdrop click
+    document.getElementById('terminalOverlay').addEventListener('click', function(e) {
+      if (e.target === this) closeTerminal();
+    });
+
+    // Close on ESC key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') closeTerminal();
+    });
+
+    function switchTermTab(num, btn) {
+      // Tabs
+      document.querySelectorAll('.t-tab').forEach(function(t) {
+        t.classList.remove('active');
+      });
+      btn.classList.add('active');
+      // Panels
+      document.querySelectorAll('.t-panel').forEach(function(p) {
+        p.classList.remove('active');
+      });
+      document.getElementById('t-panel-' + num).classList.add('active');
+    }
+
+    function termCopy(elementId, btn) {
+      const el = document.getElementById(elementId);
+      // Get plain text (strip HTML tags)
+      const text = el.innerText || el.textContent;
+      const originalText = btn.textContent;
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text.trim()).then(function() {
+          btn.textContent = '✓ Copied!';
+          btn.classList.add('copied');
+          setTimeout(function() {
+            btn.textContent = originalText;
+            btn.classList.remove('copied');
+          }, 2000);
+        }).catch(function() {
+          fallbackCopy(el, btn, originalText);
+        });
+      } else {
+        fallbackCopy(el, btn, originalText);
+      }
+    }
+
+    function fallbackCopy(el, btn, originalText) {
+      const range = document.createRange();
+      range.selectNodeContents(el);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
+      try {
+        document.execCommand('copy');
+        btn.textContent = '✓ Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = originalText;
+          btn.classList.remove('copied');
+        }, 2000);
+      } catch(e) {}
+      sel.removeAllRanges();
+    }
+
+    // ===== SMOOTH SCROLL FOR NAV LINKS =====
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function(e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) {
+          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      });
+    });
+  </script>
+</body>
+</html>

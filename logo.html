@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+    html, body { width: 100%; height: 100%; overflow: hidden; background: transparent; }
+    canvas { display: block; }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.183.2/build/three.module.js",
+      "three/examples/jsm/loaders/FontLoader.js": "https://cdn.jsdelivr.net/npm/three@0.183.2/examples/jsm/loaders/FontLoader.js",
+      "three/examples/jsm/geometries/TextGeometry.js": "https://cdn.jsdelivr.net/npm/three@0.183.2/examples/jsm/geometries/TextGeometry.js"
+    }
+  }
+  </script>
+</head>
+<body>
+<script type="module">
+import * as THREE from 'three';
+import { FontLoader } from 'three/examples/jsm/loaders/FontLoader.js';
+import { TextGeometry } from 'three/examples/jsm/geometries/TextGeometry.js';
+
+// Scene setup — transparent background
+const scene = new THREE.Scene();
+// No scene.background → transparent
+
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+camera.position.set(0, 0.3, 8);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.2;
+document.body.appendChild(renderer.domElement);
+
+// Colors from the logo
+const colors = {
+  blue:    new THREE.Color(0x1a6fff),
+  midBlue: new THREE.Color(0x4488ff),
+  purple:  new THREE.Color(0x8855dd),
+  magenta: new THREE.Color(0xcc66cc),
+  pink:    new THREE.Color(0xd877c8),
+};
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0x1a1a2e, 0.6);
+scene.add(ambientLight);
+
+const mainLight = new THREE.DirectionalLight(0xffffff, 1.8);
+mainLight.position.set(5, 8, 6);
+mainLight.castShadow = true;
+mainLight.shadow.mapSize.set(2048, 2048);
+scene.add(mainLight);
+
+const fillLight = new THREE.DirectionalLight(0x4488ff, 0.6);
+fillLight.position.set(-4, 2, -2);
+scene.add(fillLight);
+
+const rimLight = new THREE.DirectionalLight(0xcc66cc, 0.5);
+rimLight.position.set(0, -2, -5);
+scene.add(rimLight);
+
+// Spotlights with color-cycling
+const spot1 = new THREE.SpotLight(0x1a6fff, 8, 20, Math.PI / 5, 0.5, 1);
+spot1.position.set(-3, 6, 4);
+spot1.target.position.set(-1.5, 0, 0);
+spot1.castShadow = true;
+spot1.shadow.mapSize.set(1024, 1024);
+scene.add(spot1); scene.add(spot1.target);
+
+const spot2 = new THREE.SpotLight(0xcc66cc, 8, 20, Math.PI / 5, 0.5, 1);
+spot2.position.set(3, 6, 4);
+spot2.target.position.set(1.5, 0, 0);
+spot2.castShadow = true;
+spot2.shadow.mapSize.set(1024, 1024);
+scene.add(spot2); scene.add(spot2.target);
+
+const spot3 = new THREE.SpotLight(0x4488ff, 6, 18, Math.PI / 6, 0.6, 1);
+spot3.position.set(0, 7, 2);
+spot3.target.position.set(0, -0.5, 0);
+spot3.castShadow = true;
+scene.add(spot3); scene.add(spot3.target);
+
+const bluePoint = new THREE.PointLight(0x1a6fff, 3, 15);
+bluePoint.position.set(-4, 2, 3);
+scene.add(bluePoint);
+
+const purplePoint = new THREE.PointLight(0xcc66cc, 3, 15);
+purplePoint.position.set(4, 2, 3);
+scene.add(purplePoint);
+
+// Spotlight color palette
+const spotColors = [
+  new THREE.Color(0x1a6fff), new THREE.Color(0x4488ff),
+  new THREE.Color(0x8855dd), new THREE.Color(0xcc66cc),
+  new THREE.Color(0xd877c8), new THREE.Color(0x22ccff),
+  new THREE.Color(0x6644ff),
+];
+
+// Particles
+const particleCount = 200;
+const particleGeometry = new THREE.BufferGeometry();
+const particlePositions = new Float32Array(particleCount * 3);
+const particleSizes     = new Float32Array(particleCount);
+const particleColors    = new Float32Array(particleCount * 3);
+
+for (let i = 0; i < particleCount; i++) {
+  particlePositions[i*3]   = (Math.random()-0.5)*16;
+  particlePositions[i*3+1] = (Math.random()-0.5)*8;
+  particlePositions[i*3+2] = (Math.random()-0.5)*8 - 2;
+  particleSizes[i] = Math.random()*3 + 1;
+  const t = Math.random();
+  const col = new THREE.Color().lerpColors(colors.blue, colors.pink, t);
+  particleColors[i*3] = col.r; particleColors[i*3+1] = col.g; particleColors[i*3+2] = col.b;
+}
+
+particleGeometry.setAttribute('position', new THREE.BufferAttribute(particlePositions, 3));
+particleGeometry.setAttribute('size',     new THREE.BufferAttribute(particleSizes, 1));
+particleGeometry.setAttribute('color',    new THREE.BufferAttribute(particleColors, 3));
+
+const particleMaterial = new THREE.ShaderMaterial({
+  uniforms: { uTime: { value: 0 } },
+  vertexShader: `
+    attribute float size;
+    varying vec3 vColor;
+    uniform float uTime;
+    void main() {
+      vColor = color;
+      vec3 pos = position;
+      pos.y += sin(uTime * 0.3 + position.x * 0.5) * 0.3;
+      pos.x += cos(uTime * 0.2 + position.y * 0.3) * 0.2;
+      vec4 mvPosition = modelViewMatrix * vec4(pos, 1.0);
+      gl_PointSize = size * (4.0 / -mvPosition.z);
+      gl_Position = projectionMatrix * mvPosition;
+    }
+  `,
+  fragmentShader: `
+    varying vec3 vColor;
+    void main() {
+      float d = length(gl_PointCoord - vec2(0.5));
+      if (d > 0.5) discard;
+      float alpha = smoothstep(0.5, 0.0, d) * 0.6;
+      gl_FragColor = vec4(vColor, alpha);
+    }
+  `,
+  transparent: true,
+  vertexColors: true,
+  depthWrite: false,
+  blending: THREE.AdditiveBlending,
+});
+
+const particles = new THREE.Points(particleGeometry, particleMaterial);
+scene.add(particles);
+
+// Glow rings
+const ringGeo = new THREE.TorusGeometry(3.5, 0.015, 16, 100);
+const ringMat = new THREE.MeshBasicMaterial({ color: 0x4488ff, transparent: true, opacity: 0.3 });
+const ring = new THREE.Mesh(ringGeo, ringMat);
+ring.position.z = -0.5;
+scene.add(ring);
+
+const ring2Geo = new THREE.TorusGeometry(4.0, 0.01, 16, 100);
+const ring2Mat = new THREE.MeshBasicMaterial({ color: 0xcc66cc, transparent: true, opacity: 0.2 });
+const ring2 = new THREE.Mesh(ring2Geo, ring2Mat);
+ring2.position.z = -0.8;
+scene.add(ring2);
+
+// Letter material with gradient
+function createLetterMaterial(t) {
+  const color = new THREE.Color().lerpColors(colors.blue, colors.pink, t);
+  return new THREE.MeshPhysicalMaterial({
+    color: color,
+    metalness: 0.4,
+    roughness: 0.15,
+    clearcoat: 1.0,
+    clearcoatRoughness: 0.05,
+    reflectivity: 0.9,
+    emissive: color.clone().multiplyScalar(0.15),
+  });
+}
+
+// Load font and build 3D text
+const fontLoader = new FontLoader();
+const letterGroup = new THREE.Group();
+scene.add(letterGroup);
+
+const letters = 'Vnagent';
+const letterMeshes  = [];
+const letterTargets = [];
+
+fontLoader.load('https://threejs.org/examples/fonts/helvetiker_bold.typeface.json', (font) => {
+  const spacing   = [];
+  const tempMeshes = [];
+  let totalWidth  = 0;
+
+  for (let i = 0; i < letters.length; i++) {
+    const geo = new TextGeometry(letters[i], {
+      font,
+      size: 1.5,
+      depth: 0.45,
+      curveSegments: 32,
+      bevelEnabled: true,
+      bevelThickness: 0.04,
+      bevelSize: 0.03,
+      bevelSegments: 8,
+    });
+    geo.computeBoundingBox();
+    const w = geo.boundingBox.max.x - geo.boundingBox.min.x;
+    spacing.push(w);
+    totalWidth += w + 0.10;
+
+    const t = i / (letters.length - 1);
+    const mesh = new THREE.Mesh(geo, createLetterMaterial(t));
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+    tempMeshes.push(mesh);
+  }
+
+  totalWidth -= 0.10;
+  let xOffset = -totalWidth / 2;
+
+  for (let i = 0; i < tempMeshes.length; i++) {
+    const mesh = tempMeshes[i];
+    const targetX = xOffset;
+    const targetY = -0.55;
+
+    mesh.position.set(targetX, targetY + 6 + Math.random()*3, -3);
+    mesh.rotation.set(
+      (Math.random()-0.5)*Math.PI,
+      (Math.random()-0.5)*Math.PI,
+      (Math.random()-0.5)*Math.PI
+    );
+    mesh.scale.set(0.01, 0.01, 0.01);
+
+    letterGroup.add(mesh);
+    letterMeshes.push(mesh);
+    letterTargets.push({ x: targetX, y: targetY, z: 0, delay: i * 0.12 });
+    xOffset += spacing[i] + 0.10;
+  }
+});
+
+// Easing helpers
+function easeOutElastic(t) {
+  if (t===0||t===1) return t;
+  return Math.pow(2,-10*t)*Math.sin((t-0.075)*(2*Math.PI)/0.3)+1;
+}
+function easeOutCubic(t) { return 1 - Math.pow(1-t, 3); }
+
+// Animation loop
+const clock = new THREE.Clock();
+let animationStarted = false, startTime = 0;
+
+function animate() {
+  requestAnimationFrame(animate);
+  const elapsed = clock.getElapsedTime();
+
+  if (!animationStarted && letterMeshes.length > 0) {
+    animationStarted = true;
+    startTime = elapsed;
+  }
+
+  if (animationStarted) {
+    const time = elapsed - startTime;
+    for (let i = 0; i < letterMeshes.length; i++) {
+      const mesh   = letterMeshes[i];
+      const target = letterTargets[i];
+      const localTime = Math.max(0, time - target.delay);
+      const t = Math.min(localTime / 1.2, 1);
+      const ease    = easeOutElastic(t);
+      const easePos = easeOutCubic(Math.min(t*1.5, 1));
+
+      mesh.position.x = target.x + target.x*(1-easePos)*0.3;
+      mesh.position.y = THREE.MathUtils.lerp(target.y+6, target.y, easePos);
+      mesh.position.z = THREE.MathUtils.lerp(-3, target.z, easePos);
+      mesh.scale.setScalar(ease);
+      mesh.rotation.x = THREE.MathUtils.lerp(mesh.rotation.x, 0, 0.08);
+      mesh.rotation.y = THREE.MathUtils.lerp(mesh.rotation.y, 0, 0.08);
+      mesh.rotation.z = THREE.MathUtils.lerp(mesh.rotation.z, 0, 0.08);
+
+      if (t >= 1) {
+        const letter = letters[i];
+        if (letter === 'V') {
+          const pulse = 1 + Math.sin(elapsed*3.0)*0.06;
+          mesh.scale.set(pulse, pulse, pulse);
+          mesh.rotation.z = Math.sin(elapsed*1.5)*0.08;
+          mesh.rotation.x = Math.cos(elapsed*1.1)*0.04;
+          mesh.position.y = target.y + Math.sin(elapsed*2.0)*0.06;
+          mesh.material.emissive.copy(mesh.material.color).multiplyScalar(0.15 + Math.sin(elapsed*3.0)*0.12);
+        } else if (letter === 'a') {
+          mesh.position.y = target.y + Math.abs(Math.sin(elapsed*2.5+i))*0.1;
+          mesh.rotation.y = Math.sin(elapsed*1.8+i)*0.25;
+          mesh.rotation.x = Math.cos(elapsed*1.3+i*0.5)*0.06;
+          mesh.rotation.z = Math.sin(elapsed*0.9+i*1.2)*0.04;
+          mesh.position.x = target.x + Math.sin(elapsed*1.4+i*2.0)*0.05;
+          mesh.material.emissive.copy(mesh.material.color).multiplyScalar(0.15 + Math.sin(elapsed*2.5+i)*0.1);
+        } else if (letter === 'e') {
+          mesh.position.y = target.y + Math.sin(elapsed*2.2+i*1.5)*0.09;
+          mesh.position.x = target.x + Math.cos(elapsed*1.6+i)*0.04;
+          mesh.rotation.z = Math.sin(elapsed*2.0)*0.12;
+          mesh.rotation.x = Math.sin(elapsed*1.4+0.5)*0.05;
+          mesh.rotation.y = Math.cos(elapsed*1.0)*0.06;
+          mesh.material.emissive.copy(mesh.material.color).multiplyScalar(0.15 + Math.sin(elapsed*6.0)*0.08 + Math.sin(elapsed*4.2)*0.06);
+        } else {
+          mesh.position.y = target.y + Math.sin(elapsed*1.2+i*0.6)*0.04;
+          mesh.rotation.x = Math.sin(elapsed*0.8+i*0.9)*0.02;
+          mesh.rotation.y = Math.cos(elapsed*0.6+i*0.7)*0.015;
+        }
+      }
+    }
+  }
+
+  // Rings
+  ring.rotation.z  = elapsed * 0.15;
+  ring2.rotation.z = -elapsed * 0.10;
+  ring.material.opacity  = 0.20 + Math.sin(elapsed*0.8)*0.10;
+  ring2.material.opacity = 0.15 + Math.cos(elapsed*0.6)*0.08;
+  const ringHue = (elapsed*0.05) % 1;
+  ring.material.color.setHSL(ringHue, 0.8, 0.55);
+  ring2.material.color.setHSL((ringHue+0.15)%1, 0.7, 0.5);
+
+  // Particles
+  particleMaterial.uniforms.uTime.value = elapsed;
+
+  // Gentle camera sway (no mouse in iframe)
+  camera.position.x = Math.sin(elapsed*0.25)*0.15;
+  camera.position.y = 0.3 + Math.cos(elapsed*0.18)*0.08;
+  camera.lookAt(0, -0.3, 0);
+
+  // Lights
+  bluePoint.intensity   = 3 + Math.sin(elapsed*1.2)*0.8;
+  purplePoint.intensity = 3 + Math.cos(elapsed*1.0)*0.8;
+
+  // Spotlight color cycling
+  const cp = 4.0;
+  for (let s = 0; s < 3; s++) {
+    const off   = s * cp * 0.33;
+    const idx   = Math.floor((elapsed+off)/cp) % spotColors.length;
+    const nIdx  = (idx+1) % spotColors.length;
+    const blend = ((elapsed+off)%cp)/cp;
+    const sm    = blend*blend*(3-2*blend);
+    const sp    = [spot1, spot2, spot3][s];
+    sp.color.lerpColors(spotColors[idx], spotColors[nIdx], sm);
+  }
+
+  spot1.position.x = -3 + Math.sin(elapsed*0.4)*1.5;
+  spot2.position.x =  3 + Math.cos(elapsed*0.35)*1.5;
+  spot3.position.y =  7 + Math.sin(elapsed*0.5)*0.8;
+  spot1.intensity = 8 + Math.sin(elapsed*0.9)*2;
+  spot2.intensity = 8 + Math.cos(elapsed*0.7)*2;
+  spot3.intensity = 6 + Math.sin(elapsed*1.1)*1.5;
+
+  renderer.render(scene, camera);
+}
+
+animate();
+
+window.addEventListener('resize', () => {
+  camera.aspect = window.innerWidth / window.innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
