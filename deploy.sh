@@ -1,21 +1,22 @@
 #!/bin/bash
 # ============================================
-# VNAgent.ai — Deploy lên Cloudflare Pages
-# Dùng: bash deploy.sh
+# VNAgent.ai — deploy to Cloudflare
+# vnagent.ai + www.vnagent.ai are custom domains of the
+# static-assets Worker "soft-wave-828a" (not Cloudflare Pages).
+# Deploys only the committed site files from HEAD.
+# Usage: bash deploy.sh
 # ============================================
-
+set -euo pipefail
 export PATH="$HOME/.npm-global/bin:$PATH"
 
-echo ""
-echo "🚀 Deploying VNAgent.ai → Cloudflare Pages..."
-echo ""
+cd "$(dirname "$0")"
+OUT="$(mktemp -d)/public"
+mkdir -p "$OUT"
+for f in index.html favicon.svg logo.html; do
+  git show "HEAD:$f" > "$OUT/$f"
+done
 
-# Deploy toàn bộ thư mục hiện tại lên project 'vnagent'
-wrangler pages deploy . \
-  --project-name vnagent \
-  --branch main \
-  --commit-message "Deploy $(date '+%Y-%m-%d %H:%M')"
+echo "🚀 Deploying $(git rev-parse --short HEAD) → Worker soft-wave-828a..."
+wrangler deploy --name soft-wave-828a --assets "$OUT" --compatibility-date 2026-03-29
 
-echo ""
-echo "✅ Done! Kiểm tra tại: https://vnagent.ai"
-echo ""
+echo "✅ Done. Verify: curl -s https://vnagent.ai/ | shasum -a 256 vs git show HEAD:index.html | shasum -a 256"
